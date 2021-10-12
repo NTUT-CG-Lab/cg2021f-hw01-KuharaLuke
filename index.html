@@ -15,6 +15,7 @@
 		<script src="./opentype.min.js"></script>
 		<script src="./three.min.js"></script>
 		<script src="./TTFLoader.js"></script>
+		<script src="./PLYLoader.js"></script>
 		
 		<script>
 		
@@ -22,7 +23,7 @@
 
 			let container;
 			let camera, cameraTarget, scene, renderer;
-			let group, textMesh1, textMesh2, textGeo, material, handgroup, handmaterial, pivot ;
+			let group, textMesh1, textMesh2, textGeo, material, handgroup, handmaterial, kek ;
 			let firstLetter = true;
 			const raycaster = new THREE.Raycaster();
 			const mouse = new THREE.Vector2();
@@ -206,7 +207,45 @@
 				document.addEventListener( 'keydown', onDocumentKeyDown );
 
 				window.addEventListener( 'resize', onWindowResize );
+				
+				//PLY loader
+				const plyloader = new THREE.PLYLoader();
+				plyloader.load(
+					'./Crankcase.ply',
+					function (geometry) {
+						geometry.computeVertexNormals()
+						kek = new THREE.Mesh(geometry, material)
+						kek.rotateX(-Math.PI / 2)
+						kek.scale.x=0.3;
+						kek.scale.y=0.3;
+						kek.scale.z=0.3;
+						cmesh.getWorldPosition(kek.position);
+						scene.add(kek)
+				//PLY move
+						setInterval(function(){
+							kek.translateX(3);
+							kek.translateY(3);
+							kek.translateZ(5);
+							/*let frustum = new THREE.Frustum();
+							frustum.setFromMatrix(new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));  
 
+							// Your 3d point to check
+							let pos;
+							kek.getWorldPosition(pos);
+							if (frustum.containsPoint(pos)) {
+								rebound(kek);
+							}*/
+						},100);
+					},
+					(xhr) => {
+						console.log((xhr.loaded / xhr.total) * 100 + '% loaded')
+					},
+					(error) => {
+						console.log(error)
+					}
+				)
+				
+				
 			}
 
 			function onWindowResize() {
@@ -267,10 +306,6 @@
 				group.add(textback);
 
 			}
-
-			function tiktok(){
-				
-			}
 			
 			function refreshText() {
 
@@ -324,7 +359,14 @@
 
 			}
 
-			//
+			//rebound function
+			function rebound(obj){
+				obj.translateX(-0.1);
+				obj.translateY(-0.1);
+				obj.translateZ(-0.5);
+				console.log(obj.position);
+				
+			}
 
 			function animate() {
 
