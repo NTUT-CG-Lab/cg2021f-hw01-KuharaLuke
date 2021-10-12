@@ -22,7 +22,7 @@
 
 			let container;
 			let camera, cameraTarget, scene, renderer;
-			let group, textMesh1, textMesh2, textGeo, material;
+			let group, textMesh1, textMesh2, textGeo, material, handgroup, handmaterial, pivot ;
 			let firstLetter = true;
 			const raycaster = new THREE.Raycaster();
 			const mouse = new THREE.Vector2();
@@ -87,7 +87,8 @@
 
 				material = new THREE.MeshPhongMaterial( { color: 0xffffff, flatShading: true } );
 				backmaterial = new THREE.MeshPhongMaterial({color: 0x808080,flatShading: true} );
-
+				handmaterial = backmaterial;
+				
 				group = new THREE.Group();
 				group.position.y = 100;
 
@@ -100,13 +101,62 @@
 				cmesh.position.y=125;
 				cmesh.position.x=40;
 				
+				//loadfont, render dem words
 				loader.load( fontttf, function ( json ) {
-				console.log(json)
-					font = new THREE.Font( json );
-					text.forEach((element,index) => createText(element,index));
-					scene.add(cmesh);
-
+					console.log(json)
+						font = new THREE.Font( json );
+						text.forEach((element,index) => createText(element,index));
+						scene.add(cmesh);
+					
 				} );
+				
+				//hands and the spinning
+				let longhand = new THREE.BoxGeometry( 7, 150, 7 );
+				let middlehand = new THREE.BoxGeometry(7,90,7);
+				let smallhand = new THREE.BoxGeometry(7,45,7);
+				hourhand = new THREE.Mesh(smallhand,handmaterial);
+				minutehand = new THREE.Mesh(middlehand,handmaterial);
+				secondhand = new THREE.Mesh(longhand,handmaterial);
+				secondhandgroup = new THREE.Group();
+				secondhandparent = new THREE.Group();
+				mgroup=new THREE.Group();
+				mparent = new THREE.Group();
+				hgroup=new THREE.Group();
+				hparent = new THREE.Group();
+				cmesh.getWorldPosition(secondhandparent.position);
+				secondhandparent.getWorldPosition(mparent.position);
+				cmesh.getWorldPosition(hparent.position);
+				secondhandgroup.add(secondhand);
+				secondhandparent.add(secondhandgroup);
+				mgroup.add(minutehand);
+				mparent.add(mgroup);
+				mparent.position.z+=2;
+				hgroup.add(hourhand);
+				hparent.add(hgroup);
+				secondhandparent.children[0].translateY(60);
+				scene.add(secondhandparent);
+				scene.add(mparent);
+				scene.add(hparent);
+				mparent.children[0].translateY(45);
+				hparent.children[0].translateY(22.5);
+				console.log(mparent.position);
+				
+				
+				var d = new Date();
+
+				var mins = d.getMinutes();
+				var secs = d.getSeconds();
+				var hours = d.getHours();
+				
+				mparent.rotateZ((-mins / 60) * (2 * Math.PI));
+				secondhandparent.rotateZ(((mins /60) + (-secs / 3600)) * (2 * Math.PI));
+				hparent.rotateZ(((-hours / 12) + (mins / 720)) * (2 * Math.PI));
+				
+				setInterval(function(){
+					mparent.rotateZ((2 * Math.PI) / -3600);
+					secondhandparent.rotateZ((2 * Math.PI) / -60);
+					hparent.rotateZ((2 * Math.PI) / (-3600 * 12));
+				},1000);
 				
 
 				//plane
@@ -114,7 +164,7 @@
 					new THREE.PlaneGeometry( 10000, 500 ),
 					new THREE.MeshBasicMaterial( { color: 0xffffff, opacity: 0.5, transparent: true } )
 				);
-				plane.position.y = 100;
+				plane.position.y = 0;
 				plane.rotation.x = - Math.PI / 2;
 				scene.add( plane );
 
@@ -134,7 +184,7 @@
 				const planetext = new THREE.Mesh(planegeo,material);
 				planetext.rotateX(-45);
 				planetext.position.x=-275;
-				planetext.position.y=101;
+				planetext.position.y=1;
 				planetext.position.z=225;
 				scene.add(planetext);
 				} );
@@ -218,6 +268,10 @@
 
 			}
 
+			function tiktok(){
+				
+			}
+			
 			function refreshText() {
 
 			}
@@ -275,7 +329,6 @@
 			function animate() {
 
 				requestAnimationFrame( animate );
-
 				group.rotation.y += ( targetRotation - group.rotation.y ) * 0.05;
 
 				camera.lookAt( cameraTarget );
@@ -283,7 +336,7 @@
 				renderer.render( scene, camera );
 
 			}
-
+			
 		</script>
 
 	</body>
